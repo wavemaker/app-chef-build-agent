@@ -1,0 +1,32 @@
+{
+  "name": "app-chef-build-agent",
+  "version": "1.0.0",
+  "description": "Here a cook is created for  App Chef. A cook looks upto App Chef  for a app build task. Worker completes the assigned task and hands over the output to the chef.",
+  "main": "cook.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "appchef": "./cli.js"
+  },
+  "keywords": [
+    "app",
+    "chef",
+    "app-chef"
+  ],
+  "author": "Srinivasa Rao Boyina",
+  "license": "ISC",
+  "dependencies": {
+    "async": "^3.2.0",
+    "aws-sdk": "^2.737.0",
+    "execa": "^4.0.3",
+    "form-data": "^3.0.0",
+    "fs-extra": "^9.0.1",
+    "request": "^2.88.2",
+    "requests": "^0.3.0",
+    "unzipper": "^0.10.11",
+    "winston": "^3.3.3",
+    "wm-cordova-cli": "git+https://github.com/wavemaker/wm-cordova-cli.git#f0a7e35",
+    "yargs": "^15.4.1"
+  }
+}

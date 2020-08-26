@@ -1,0 +1,30 @@
+https://gist.github.com/nlutsenko/ee245fbd239087d22137
+
+defaults write com.apple.dt.xcodebuild PBXNumberOfParallelBuildSubtasks `sysctl -n hw.ncpu`
+defaults write com.apple.dt.xcodebuild IDEBuildOperationMaxNumberOfConcurrentCompileTasks `sysctl -n hw.ncpu`
+defaults write com.apple.dt.Xcode PBXNumberOfParallelBuildSubtasks `sysctl -n hw.ncpu`
+defaults write com.apple.dt.Xcode IDEBuildOperationMaxNumberOfConcurrentCompileTasks `sysctl -n hw.ncpu`
+
+---- npm
+npm config set audit false
+npm config set --prefer-offline true
+
+--- installations
+install brew [ mkdir homebrew && curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip 1 -C homebrew]
+install git [  ~/homebrew/bin/brew install git ]
+install java [~/homebrew/bin/brew tap AdoptOpenJDK/openjdk][~/homebrew/bin/brew cask install adoptopenjdk8]
+install gradle [ ~/homebrew/bin/brew install gradle ]
+download latest android studio
+/Users/${USER}/Library/Android/sdk/tools/bin/sdkmanager "platforms;android-28"
+install xcode from app store
+
+-- with appropriate values save as appchef.sh
+export JAVA_HOME="/Library/Java/JavaVirtualMachines/adoptopenjdk-8.jdk/Contents/Home"
+export ANDROID_HOME="/Users/${USER}/Library/Android/sdk"
+export ANDROID_SDK_ROOT="/Users/${USER}/Library/Android/sdk"
+export PATH="$PATH:/Users/${USER}/homebrew/Cellar/gradle/6.5.1/bin:/Users/${USER}/Library/Android/sdk/tools/bin"
+Sdkmanager --list
+appchef start-agents --appChef="${SERVER_HOST}" --appChefKey="${SECRET_KEY}" --platforms="android,ios"
+
+install node 12~
+npm install -g pm2
