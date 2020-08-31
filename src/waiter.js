@@ -8,6 +8,7 @@ const FormData = require('form-data');
 const execa = require('execa');
 const loggerLabel = 'Waiter';
 const MAX_FILE_SIZE_FOR_UPLOAD = 200 * 1024 * 1024;
+const MAX_REQUEST_ALLOWED_TIME = 3 * 60 * 1000;
 const path = require('path');
 const {
     uploadToS3
@@ -29,7 +30,7 @@ class Waiter {
             const fw = fs.createWriteStream(tempFile);
             let url = `${this.kitchen.appChef}services/chef/assignWork?`
             url += `platforms=${this.kitchen.targetPlatforms}&key=${this.kitchen.appChefKey}`;
-            this.kitchen.appChefHttp.get(url, res => {
+            const req = this.kitchen.appChefHttp.get(url, res => {
                 res.pipe(fw);
                 fw.on('close', () => {
                     if (res.complete && res.statusCode == 200) {
@@ -40,6 +41,10 @@ class Waiter {
                         reject(res.statusCode);
                     }
                 });
+            });
+            req.setTimeout(MAX_REQUEST_ALLOWED_TIME, () => {
+                req.abort();
+                reject('request timedout');
             });
         }).catch((reason) => {
             fs.removeSync(tempFile);
@@ -134,6 +139,10 @@ class Waiter {
                         headers: form.getHeaders()
                     });
                     form.pipe(request);
+                    request.setTimeout(MAX_REQUEST_ALLOWED_TIME, () => {
+                        request.abort();
+                        reject('request timedout while serving the order.');
+                    });
                     request.on('response', res => {
                         let body = '';
                         res.on('data', data => {
