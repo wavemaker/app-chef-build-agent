@@ -42,6 +42,9 @@ class Waiter {
                     }
                 });
             });
+            req.on('error', (reason) => {
+                reject(reason);
+            });
             req.setTimeout(MAX_REQUEST_ALLOWED_TIME, () => {
                 req.abort();
                 reject('request timedout');
@@ -142,6 +145,9 @@ class Waiter {
                     request.setTimeout(MAX_REQUEST_ALLOWED_TIME, () => {
                         request.abort();
                         reject('request timedout while serving the order.');
+                    });
+                    request.on('error', (reason) => {
+                        reject(reason);
                     });
                     request.on('response', res => {
                         let body = '';
