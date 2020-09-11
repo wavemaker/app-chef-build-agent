@@ -17,8 +17,11 @@ install gradle [ ~/homebrew/bin/brew install gradle ]
 download latest android studio
 /Users/${USER}/Library/Android/sdk/tools/bin/sdkmanager "platforms;android-28"
 install xcode from app store
+sudo gem install cocoapods
+
 
 -- with appropriate values save as appchef.sh
+export LANG=en_US.utf-8
 export JAVA_HOME="/Library/Java/JavaVirtualMachines/adoptopenjdk-8.jdk/Contents/Home"
 export ANDROID_HOME="/Users/${USER}/Library/Android/sdk"
 export ANDROID_SDK_ROOT="/Users/${USER}/Library/Android/sdk"
