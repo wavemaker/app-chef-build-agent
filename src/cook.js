@@ -1,5 +1,5 @@
-const command = require('wm-cordova-cli/src/command');
-const logger = require('wm-cordova-cli/src/logger');
+const command = require('@wavemaker/wm-cordova-cli/src/command');
+const logger = require('@wavemaker/wm-cordova-cli/src/logger');
 
 const loggerLabel = 'cook';
 

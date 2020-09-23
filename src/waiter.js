@@ -1,9 +1,9 @@
 const fs = require('fs-extra');
-const logger = require('wm-cordova-cli/src/logger');
+const logger = require('@wavemaker/wm-cordova-cli/src/logger');
 const parseUrl = require('url').parse;
 const {
     findFile
-} = require('wm-cordova-cli/src/utils');
+} = require('@wavemaker/wm-cordova-cli/src/utils');
 const FormData = require('form-data');
 const execa = require('execa');
 const loggerLabel = 'Waiter';

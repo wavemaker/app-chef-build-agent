@@ -26,7 +26,7 @@
     "requests": "^0.3.0",
     "unzipper": "^0.10.11",
     "winston": "^3.3.3",
-    "wm-cordova-cli": "git+https://github.com/wavemaker/wm-cordova-cli.git#f0a7e35",
+    "@wavemaker/wm-cordova-cli": "^1.0.6",
     "yargs": "^15.4.1"
   }
 }

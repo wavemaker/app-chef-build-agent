@@ -74,7 +74,7 @@ if (paramMap['platforms'].indexOf('android') >= 0) {
   apps.push(prepareApp(prepareArgs('android-', paramMap, {
     name: 'apk-builder',
     platforms: 'android',
-    instances: 2
+    instances: 1
   })));
 }
 if (paramMap['platforms'].indexOf('ios') >= 0) {
