@@ -1,6 +1,7 @@
 const AWS = require('aws-sdk');
 const async = require('async');
 const fs = require('fs');
+const logger = require('@wavemaker/wm-cordova-cli/src/logger');
 
 const errorOnNull = (obj, k) => {
     const v = obj[k];
@@ -103,5 +104,17 @@ const uploadMultipart = async (s3Client, bucketName, fileName, fromAbsoluteFileP
 
 
 module.exports = {
-    uploadToS3: uploadToS3
+    uploadToS3: async (filePath, iConfig) => {
+        const retryAttempts = iConfig.retryAttempts || 1;
+        let i = 1;
+        const tryUpload = async () => {
+            logger.info(`Trying(${i}) to upload the artifact to s3`);
+            return uploadToS3(filePath, iConfig).catch(() => {
+                if (i++ < retryAttempts) {
+                    return tryUpload();
+                };
+            });
+        };
+        await tryUpload();
+    }
 };

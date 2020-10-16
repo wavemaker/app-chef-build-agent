@@ -108,13 +108,17 @@ class Waiter {
                                 secretAccessKey: params.secretAccessKey,
                                 region: params.region,
                                 bucketName: params.bucketName,
-                                key: params.key
+                                key: params.key,
+                                retryAttempts: 3
                             }).then(() => {
                                 form.append('outputAt', params.key);
                                 logger.info({
                                     label: loggerLabel,
                                     message: "successfully uploaded artifact to s3."
                                 });
+                            }, () => {
+                                logger.error("Failed to upload artifact to s3");
+                                success = false
                             });
                         } else {
                             form.append("output", fs.createReadStream(artifact));
