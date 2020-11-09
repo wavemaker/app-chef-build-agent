@@ -164,11 +164,14 @@ class Waiter {
                         res.on('end', () => {
                             fs.removeSync(buildFolder + (success ? '' : '_br'));
                             if (res.complete && res.statusCode == 200) {
-                                logger.info({
-                                    label: loggerLabel,
-                                    message: "successfully served the order."
-                                });
-                                resolve();
+                                // Need to give time for s3 to push the uploaded file to all servers.
+                                setTimeout(() => {
+                                    logger.info({
+                                        label: loggerLabel,
+                                        message: "successfully served the order."
+                                    });
+                                    resolve();
+                                }, 30 * 1000);
                             } else {
                                 logger.error({
                                     label: loggerLabel,
