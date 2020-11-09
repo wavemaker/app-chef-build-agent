@@ -132,6 +132,9 @@ class Waiter {
                     }
                 }
             }).then(() => {
+                // Need to give time for s3 to push the uploaded file to all servers (eventual-consistency problem).
+                return new Promise(r => setTimeout(r, success ? 30000 : 10));
+            }).then(() => {
                 return new Promise((resolve, reject) => {
                     const buildLog = findFile(buildFolder + "build/output/logs/", /build.log?/);
                     form.append("log", fs.createReadStream(buildLog));
@@ -164,14 +167,11 @@ class Waiter {
                         res.on('end', () => {
                             fs.removeSync(buildFolder + (success ? '' : '_br'));
                             if (res.complete && res.statusCode == 200) {
-                                // Need to give time for s3 to push the uploaded file to all servers.
-                                setTimeout(() => {
-                                    logger.info({
-                                        label: loggerLabel,
-                                        message: "successfully served the order."
-                                    });
-                                    resolve();
-                                }, 30 * 1000);
+                                logger.info({
+                                    label: loggerLabel,
+                                    message: "successfully served the order."
+                                });
+                                resolve();
                             } else {
                                 logger.error({
                                     label: loggerLabel,
