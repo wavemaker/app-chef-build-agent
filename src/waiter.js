@@ -1,18 +1,15 @@
 const fs = require('fs-extra');
 const logger = require('@wavemaker/wm-cordova-cli/src/logger');
-const parseUrl = require('url').parse;
 const {
     findFile
 } = require('@wavemaker/wm-cordova-cli/src/utils');
 const FormData = require('form-data');
 const execa = require('execa');
+const axios = require('axios');
 const loggerLabel = 'Waiter';
 const MAX_FILE_SIZE_FOR_UPLOAD = 200 * 1024 * 1024;
 const MAX_REQUEST_ALLOWED_TIME = 3 * 60 * 1000;
 const path = require('path');
-const {
-    uploadToS3
-} = require('./s3');
 
 const canUploadFile = (path) => {
     const stats = fs.statSync(path);
@@ -26,29 +23,29 @@ class Waiter {
 
     takeOrder() {
         const tempFile = this.kitchen.tempDir + `cordova_${Date.now()}.zip`;
-        return new Promise((resolve, reject) => {
-            const fw = fs.createWriteStream(tempFile);
-            let url = `${this.kitchen.appChef}services/chef/assignWork?`
-            url += `platforms=${this.kitchen.targetPlatforms}&key=${this.kitchen.appChefKey}`;
-            const req = this.kitchen.appChefHttp.get(url, res => {
-                res.pipe(fw);
-                fw.on('close', () => {
-                    if (res.complete && res.statusCode == 200) {
-                        resolve(res.headers['x-build_task_token']);
-                    }else if (res.complete && res.statusCode == 204) {
-                        resolve();
-                    } else {
-                        reject(res.statusCode);
-                    }
+        const fw = fs.createWriteStream(tempFile);
+        let url = `${this.kitchen.appChef}services/chef/assignWork?`
+        url += `platforms=${this.kitchen.targetPlatforms}&key=${this.kitchen.appChefKey}`;
+        let buildTaskToken = null;
+        return axios.get(url, {
+            responseType: 'json'
+        }).then(res => {
+            if (!res.data.taskToken) {
+                return;
+            }
+            return axios.get(res.data.cordovaZipUrl, {
+                timeout: MAX_REQUEST_ALLOWED_TIME,
+                responseType: 'stream'
+            }).then(res => {
+                return new Promise((resolve, reject) => {
+                    res.data.pipe(fw);
+                    fw.on('error', err => {
+                        reject(err);
+                        fw.close();
+                    });
+                    fw.on('close', resolve);
                 });
-            });
-            req.on('error', (reason) => {
-                reject(reason);
-            });
-            req.setTimeout(MAX_REQUEST_ALLOWED_TIME, () => {
-                req.abort();
-                reject('request timedout');
-            });
+            }).then(() => res.data.taskToken);
         }).catch((reason) => {
             fs.removeSync(tempFile);
             return Promise.reject(reason);
@@ -88,7 +85,7 @@ class Waiter {
         success = !!success;
         const settings = require(buildFolder + '_br/settings.json');
         const platform = settings.platform;
-        var form = new FormData();
+        const buildData = {};
         return Promise.resolve()
             .then(() => {
                 let artifact = null;
@@ -100,25 +97,17 @@ class Waiter {
                 }
                 if (artifact) {
                     if (canUploadFile(artifact)) {
-                        form.append('outputName', path.basename(artifact));
+                        buildData['outputName'] = path.basename(artifact);
                         if (settings.upload && settings.upload.to === 's3') {
                             const params = settings.upload;
-                            return uploadToS3(artifact, {
-                                accessKeyId: params.accessKeyId,
-                                secretAccessKey: params.secretAccessKey,
-                                region: params.region,
-                                bucketName: params.bucketName,
-                                key: params.key,
-                                retryAttempts: 3
-                            }).then(() => {
-                                form.append('outputAt', params.key);
-                                logger.info({
-                                    label: loggerLabel,
-                                    message: "successfully uploaded artifact to s3."
-                                });
-                            }, () => {
-                                logger.error("Failed to upload artifact to s3");
-                                success = false
+                            buildData['outputAt'] = params.key;
+                            return axios.put(params.uploadUrl, fs.readFileSync(artifact), {
+                                headers: {
+                                    'Content-Type': 'application/octet-stream'
+                                },
+                                timeout: MAX_REQUEST_ALLOWED_TIME,
+                                maxContentLength: Infinity,
+                                maxBodyLength: Infinity
                             });
                         } else {
                             form.append("output", fs.createReadStream(artifact));
@@ -126,64 +115,59 @@ class Waiter {
                     } else {
                         logger.error({
                             label: loggerLabel,
-                            message: "Couldnot upload the archive as maximum size that can be uploaded is  " + (MAX_FILE_SIZE_FOR_UPLOAD / (1024 * 1024)) + " MB."
+                            message: "Could not upload the archive as maximum size that can be uploaded is  " + (MAX_FILE_SIZE_FOR_UPLOAD / (1024 * 1024)) + " MB."
                         });
                         success = false;
                     }
                 }
             }).then(() => {
-                // Need to give time for s3 to push the uploaded file to all servers (eventual-consistency problem).
-                return new Promise(r => setTimeout(r, success ? 30000 : 10));
-            }).then(() => {
-                return new Promise((resolve, reject) => {
-                    const buildLog = findFile(buildFolder + "build/output/logs/", /build.log?/);
-                    form.append("log", fs.createReadStream(buildLog));
-                    form.append("success", "" + success);
-                    form.append("token", buildTaskToken);
-                    form.append("key", this.kitchen.appChefKey);
-                    const params = parseUrl(`${this.kitchen.appChef}services/chef/onBuildFinish`);
-                    const request = this.kitchen.appChefHttp.request({
-                        method: 'post',
-                        host: params.hostname,
-                        path: params.pathname,
-                        headers: form.getHeaders()
+                buildData['buildFolder'] = buildFolder;
+                buildData['buildTaskToken'] = buildTaskToken;
+                buildData['success'] = success;
+                return this.upload(buildData, 5).then(() => {
+                    logger.info({
+                        label: loggerLabel,
+                        message: "successfully served the order."
                     });
-                    form.pipe(request);
-                    request.setTimeout(MAX_REQUEST_ALLOWED_TIME, () => {
-                        request.abort();
-                        reject('request timedout while serving the order.');
+                }).catch((msg) => {
+                    logger.error({
+                        label: loggerLabel,
+                        message: "failed to serve the order with response as follows : " + msg
                     });
-                    request.on('error', (reason) => {
-                        reject(reason);
-                    });
-                    request.on('response', res => {
-                        let body = '';
-                        res.on('data', data => {
-                            body += data;
-                        });
-                        res.on('error', data => {
-                            body += data;
-                        })
-                        res.on('end', () => {
-                            fs.removeSync(buildFolder + (success ? '' : '_br'));
-                            if (res.complete && res.statusCode == 200) {
-                                logger.info({
-                                    label: loggerLabel,
-                                    message: "successfully served the order."
-                                });
-                                resolve();
-                            } else {
-                                logger.error({
-                                    label: loggerLabel,
-                                    message: "failed to serve the order with response as follows : " + body
-                                });
-                                reject();
-                            }
-                        });
-                        res.resume();
-                    });
+                }).then(() => {
+                    fs.removeSync(buildFolder + (success ? '' : '_br'));
                 });
             });
+    }
+    
+
+    upload(data, retryCount) {
+        const buildLog = findFile(data.buildFolder + "build/output/logs/", /build.log?/);
+        const form = new FormData();
+        form.append('outputName', data.outputName);
+        form.append('outputAt', data.outputAt);
+        form.append("log", fs.createReadStream(buildLog));
+        form.append("success", "" + data.success);
+        form.append("token", data.buildTaskToken);
+        form.append("key", this.kitchen.appChefKey);
+        return axios.post(`${this.kitchen.appChef}services/chef/onBuildFinish`, form, {
+            headers : form.getHeaders()
+        })
+        .catch((msg) => {
+            if (retryCount) {
+                logger.error({
+                    label: loggerLabel,
+                    message: "failed to serve the order. Trying for another time."
+                });
+                return new Promise((res, rej) => {
+                    setTimeout(() => {
+                        this.upload(data, --retryCount).then(res, rej);
+                    }, 30000);
+                });
+            } else {
+                return Promise.reject(msg);
+            }
+        });
     }
 }
 
