@@ -144,8 +144,8 @@ class Waiter {
     upload(data, retryCount) {
         const buildLog = findFile(data.buildFolder + "build/output/logs/", /build.log?/);
         const form = new FormData();
-        form.append('outputName', data.outputName);
-        form.append('outputAt', data.outputAt);
+        data.outputName && form.append('outputName', data.outputName);
+        data.outputAt && form.append('outputAt', data.outputAt);
         form.append("log", fs.createReadStream(buildLog));
         form.append("success", "" + data.success);
         form.append("token", data.buildTaskToken);
