@@ -81,9 +81,8 @@ class Waiter {
         });
     }
 
-    async serve(success, buildTaskToken, buildFolder) {
+    async serve(success, buildTaskToken, buildFolder, settings) {
         success = !!success;
-        const settings = require(buildFolder + '_br/settings.json');
         const platform = settings.platform;
         const buildData = {};
         return Promise.resolve()

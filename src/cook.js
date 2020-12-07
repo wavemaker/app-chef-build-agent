@@ -1,5 +1,6 @@
 const command = require('@wavemaker/wm-cordova-cli/src/command');
 const logger = require('@wavemaker/wm-cordova-cli/src/logger');
+const fs = require('fs-extra');
 
 const loggerLabel = 'cook';
 
@@ -17,8 +18,10 @@ class Cook {
             message: "build is about to start in the next milliseconds."
         });
         let result = {};
+        const settingsFile = buildFolder + '_br/settings.json';
+        const settings = require(settingsFile);
+        fs.removeSync(settingsFile);
         try {
-            const settings = require(buildFolder + '_br/settings.json');
             if (settings.platform === 'ios') {
                 result = await command.build({
                     platform: settings.platform,
@@ -56,7 +59,7 @@ class Cook {
             label: loggerLabel,
             message: `Build took ${(Date.now() - start)/1000}s`
         });
-        await this.kitchen.waiter.serve(result && result.success, buildTaskToken, buildFolder);
+        await this.kitchen.waiter.serve(result && result.success, buildTaskToken, buildFolder, settings);
     }
 }
 
