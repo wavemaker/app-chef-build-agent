@@ -45,7 +45,8 @@ class Cook {
                     aKeyPassword: settings.codesign.keyPassword,
                     packageType: settings.packageType,
                     cordovaVersion: settings.cordovaVersion,
-                    cordovaAndroidVersion: settings.cordovaAndroidVersion
+                    cordovaAndroidVersion: settings.cordovaAndroidVersion,
+                    androidXMigrationEnabled: true
                 });
             };
         } catch (e) {
