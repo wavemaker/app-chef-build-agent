@@ -27,7 +27,7 @@
     "requests": "^0.3.0",
     "unzipper": "^0.10.11",
     "winston": "^3.3.3",
-    "@wavemaker/wm-cordova-cli": "1.0.15",
+    "@wavemaker/wm-cordova-cli": "1.0.16",
     "yargs": "^15.4.1"
   }
 }
