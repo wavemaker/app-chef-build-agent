@@ -32,7 +32,8 @@ class Cook {
                     iProvisioningFile: buildFolder + settings.codesign.provisioningProfile,
                     packageType: settings.packageType,
                     cordovaVersion: settings.cordovaVersion,
-                    cordovaIosVersion: settings.cordovaIosVersion
+                    cordovaIosVersion: settings.cordovaIosVersion,
+                    allowHooks: true
                 });
             } else if (settings.platform === 'android') {
                 result = await command.build({
@@ -46,7 +47,8 @@ class Cook {
                     packageType: settings.packageType,
                     cordovaVersion: settings.cordovaVersion,
                     cordovaAndroidVersion: settings.cordovaAndroidVersion,
-                    androidXMigrationEnabled: true
+                    androidXMigrationEnabled: true,
+                    allowHooks: true
                 });
             };
         } catch (e) {
