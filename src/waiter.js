@@ -22,7 +22,7 @@ class Waiter {
     }
 
     takeOrder() {
-        const tempFile = this.kitchen.tempDir + `cordova_${Date.now()}.zip`;
+        const tempFile = this.kitchen.tempDir + `mobile_${Date.now()}.zip`;
         const fw = fs.createWriteStream(tempFile);
         let url = `${this.kitchen.appChef}services/chef/assignWork?`
         url += `platforms=${this.kitchen.targetPlatforms}&key=${this.kitchen.appChefKey}`;
@@ -33,7 +33,7 @@ class Waiter {
             if (!res.data.taskToken) {
                 return;
             }
-            return axios.get(res.data.cordovaZipUrl, {
+            return axios.get(res.data.zipUrl, {
                 timeout: MAX_REQUEST_ALLOWED_TIME,
                 responseType: 'stream'
             }).then(res => {
@@ -72,7 +72,7 @@ class Waiter {
                 fs.removeSync(tempFile);
                 logger.info({
                     label: loggerLabel,
-                    message: "unzipped cordova zip."
+                    message: "unzipped the zip file at " + tempFile
                 });
                 fs.mkdirsSync(buildFolder + '_br');
                 fs.renameSync(buildFolder + 'src/_br', buildFolder + '_br');
@@ -138,7 +138,7 @@ class Waiter {
                 });
             });
     }
-    
+
 
     upload(data, retryCount) {
         const buildLog = findFile(data.buildFolder + "build/output/logs/", /build.log?/);
