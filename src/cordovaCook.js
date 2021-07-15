@@ -2,25 +2,21 @@ const command = require('@wavemaker/wm-cordova-cli/src/command');
 const logger = require('@wavemaker/wm-cordova-cli/src/logger');
 const fs = require('fs-extra');
 
-const loggerLabel = 'cook';
+const loggerLabel = 'CordovaCook';
 
-class Cook {
+class CordovaCook {
 
     constructor(kitchen) {
-        this.kitchen = kitchen; 
+        this.kitchen = kitchen;
     }
 
-    async doWork(buildTaskToken) {
+    async doWork(buildTaskToken, settings, buildFolder) {
         const start = Date.now();
-        const buildFolder = `${this.kitchen.wsDir}${buildTaskToken}/`;
         logger.info({
             label: loggerLabel,
             message: "build is about to start in the next milliseconds."
         });
         let result = {};
-        const settingsFile = buildFolder + '_br/settings.json';
-        const settings = require(settingsFile);
-        fs.removeSync(settingsFile);
         try {
             if (settings.platform === 'ios') {
                 result = await command.build({
@@ -66,4 +62,4 @@ class Cook {
     }
 }
 
-module.exports = Cook;
+module.exports = CordovaCook;

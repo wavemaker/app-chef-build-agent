@@ -1,4 +1,5 @@
-const Cook = require('./cook');
+const CordovaCook = require('./cordovaCook');
+const ReactnativeCook = require('./reactnativeCook');
 const logger = require('@wavemaker/wm-cordova-cli/src/logger');
 const fs = require('fs');
 
@@ -63,7 +64,15 @@ class Manager {
     }
 
     async processOrder(orderId) {
-        await new Cook(this.kitchen).doWork(orderId);
+        const buildFolder = `${this.kitchen.wsDir}${orderId}/`;
+        const settingsFile = buildFolder + '_br/settings.json';
+        const settings = require(settingsFile);
+        fs.removeSync(settingsFile);
+        if (settings.recipe === 'REACT_NATIVE') {
+            await new ReactnativeCook(this.kitchen).doWork(orderId, settings, buildFolder);
+        } else {
+            await new CordovaCook(this.kitchen).doWork(orderId, settings, buildFolder);
+        }
     }
 }
 
