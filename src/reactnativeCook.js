@@ -26,7 +26,8 @@ class ReactnativeCook {
                     iCertificatePassword: settings.codesign.unlockPassword,
                     iProvisioningFile: buildFolder + settings.codesign.provisioningProfile,
                     packageType: settings.packageType,
-                    autoEject: true
+                    autoEject: true,
+                    platform: 'ios'
                 });
             } else if (settings.platform === 'android') {
                 result = await command.build({
@@ -37,7 +38,8 @@ class ReactnativeCook {
                     aKeyAlias: settings.codesign.keyAlias,
                     aKeyPassword: settings.codesign.keyPassword,
                     packageType: settings.packageType,
-                    autoEject: true
+                    autoEject: true,
+                    platform: 'android'
                 });
             };
         } catch (e) {
