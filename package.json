@@ -28,7 +28,7 @@
     "unzipper": "^0.10.11",
     "winston": "^3.3.3",
     "@wavemaker/wm-cordova-cli": "1.6.1",
-    "@wavemaker/wm-reactnative-cli": "https://github.com/wavemaker/wm-reactnative-cli.git#098ca02",
+    "@wavemaker/wm-reactnative-cli": "file:../wm-reactnative-cli/wm-reactnative-cli",
     "yargs": "^15.4.1"
   }
 }
