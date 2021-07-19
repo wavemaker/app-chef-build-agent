@@ -25,7 +25,7 @@ class ReactnativeCook {
                     iCertificate: buildFolder + settings.codesign.certificate,
                     iCertificatePassword: settings.codesign.unlockPassword,
                     iProvisioningFile: buildFolder + settings.codesign.provisioningProfile,
-                    packageType: settings.packageType,
+                    buildType: settings.buildType,
                     autoEject: true,
                     platform: 'ios'
                 });
@@ -37,6 +37,7 @@ class ReactnativeCook {
                     aStorePassword: settings.codesign.storePassword,
                     aKeyAlias: settings.codesign.keyAlias,
                     aKeyPassword: settings.codesign.keyPassword,
+                    buildType: settings.buildType,
                     packageType: settings.packageType,
                     autoEject: true,
                     platform: 'android'

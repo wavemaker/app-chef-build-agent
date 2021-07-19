@@ -16,6 +16,7 @@ class CordovaCook {
             label: loggerLabel,
             message: "build is about to start in the next milliseconds."
         });
+        const buildType = settings.buildType === 'production' ? 'release' : 'debug';
         let result = {};
         try {
             if (settings.platform === 'ios') {
@@ -26,6 +27,7 @@ class CordovaCook {
                     iCertificate: buildFolder + settings.codesign.certificate,
                     iCertificatePassword: settings.codesign.unlockPassword,
                     iProvisioningFile: buildFolder + settings.codesign.provisioningProfile,
+                    buildType: buildType,
                     packageType: settings.packageType,
                     cordovaVersion: settings.cordovaVersion,
                     cordovaIosVersion: settings.cordovaIosVersion,
@@ -40,6 +42,7 @@ class CordovaCook {
                     aStorePassword: settings.codesign.storePassword,
                     aKeyAlias: settings.codesign.keyAlias,
                     aKeyPassword: settings.codesign.keyPassword,
+                    buildType: buildType,
                     packageType: settings.packageType,
                     cordovaVersion: settings.cordovaVersion,
                     cordovaAndroidVersion: settings.cordovaAndroidVersion,

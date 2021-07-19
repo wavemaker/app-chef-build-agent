@@ -92,7 +92,7 @@ class Waiter {
                     artifact = findFile(buildFolder + "build/output/" + platform, /\.ipa?/);
                 }
                 if (success && platform == "android") {
-                    artifact = findFile(buildFolder + "build/output/" + platform, /\.apk?/);
+                    artifact = findFile(buildFolder + "build/output/" + platform, /(\.apk?|\.aab?)/);
                 }
                 if (artifact) {
                     if (canUploadFile(artifact)) {
