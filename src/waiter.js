@@ -150,7 +150,9 @@ class Waiter {
         form.append("token", data.buildTaskToken);
         form.append("key", this.kitchen.appChefKey);
         return axios.post(`${this.kitchen.appChef}services/chef/onBuildFinish`, form, {
-            headers : form.getHeaders()
+            headers : form.getHeaders(),
+            maxContentLength: Infinity,
+            maxBodyLength: Infinity
         })
         .catch((msg) => {
             if (retryCount) {
