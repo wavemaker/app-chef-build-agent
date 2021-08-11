@@ -21,63 +21,69 @@ class Waiter {
         this.kitchen = kitchen;
     }
 
-    takeOrder() {
+    downloadOrder(url, dest, tryCount) {
         const tempFile = this.kitchen.tempDir + `mobile_${Date.now()}.zip`;
-        let url = `${this.kitchen.appChef}services/chef/assignWork?`
-        url += `platforms=${this.kitchen.targetPlatforms}&key=${this.kitchen.appChefKey}`;
-        let buildTaskToken = null;
+        if (!tryCount) {
+            return Promise.reject(`Not able to download the order. Tried for ${tryCount} times.`);
+        } else {
+            logger.info({
+                label: loggerLabel,
+                message: `Trying to download order for ${tryCount} time(s).`
+            });
+        }
         return axios.get(url, {
-            responseType: 'json'
+            timeout: MAX_REQUEST_ALLOWED_TIME,
+            responseType: 'stream'
         }).then(res => {
-            if (!res.data.taskToken) {
-                return;
-            }
-            return axios.get(res.data.zipUrl, {
-                timeout: MAX_REQUEST_ALLOWED_TIME,
-                responseType: 'stream'
-            }).then(res => {
-                return new Promise((resolve, reject) => {
-                    const fw = fs.createWriteStream(tempFile);
-                    res.data.pipe(fw);
-                    fw.on('error', err => {
-                        reject(err);
-                        fw.close();
-                    });
-                    fw.on('close', resolve);
+            return new Promise((resolve, reject) => {
+                const fw = fs.createWriteStream(tempFile);
+                res.data.pipe(fw);
+                fw.on('error', err => {
+                    reject(err);
+                    fw.close();
                 });
-            }).then(() => res.data.taskToken);
-        }).catch((reason) => {
-            fs.removeSync(tempFile);
-            return Promise.reject(reason);
-        }).then(buildTaskToken => {
-            if (!buildTaskToken) {
-                fs.existsSync(tempFile) && fs.removeSync(tempFile);
-                return null;
-            }
-            const buildFolder = `${this.kitchen.wsDir}${buildTaskToken}/`;
-            fs.emptyDirSync(buildFolder);
-            fs.mkdirSync(buildFolder + "src", {
+                fw.on('close', resolve);
+            });
+        }).then(() => {
+            fs.emptyDirSync(dest);
+            fs.mkdirSync(dest + "src", {
                 recursive: true
             });
             logger.info({
                 label: loggerLabel,
-                message: "Work is found and required input is gonna be at " + buildFolder
+                message: "Work is found and required input is gonna be at " + dest
             });
             return execa('unzip', [
                 '-o',
                 tempFile,
                 '-d',
-                buildFolder + 'src'
-            ]).then(() => {
-                fs.removeSync(tempFile);
-                logger.info({
-                    label: loggerLabel,
-                    message: "unzipped the zip file at " + tempFile
-                });
-                fs.mkdirsSync(buildFolder + '_br');
-                fs.renameSync(buildFolder + 'src/_br', buildFolder + '_br');
-                return buildTaskToken;
+                dest + 'src'
+            ]);
+        }).then(() => {
+            fs.removeSync(tempFile);
+            logger.info({
+                label: loggerLabel,
+                message: "unzipped the zip file at " + tempFile
             });
+            fs.mkdirsSync(dest + '_br');
+            fs.renameSync(dest + 'src/_br', dest + '_br');
+        }).catch(() => {
+            this.downloadOrder(url, dest, --tryCount);
+        });
+    }
+
+    takeOrder() {
+        let url = `${this.kitchen.appChef}services/chef/assignWork?`
+        url += `platforms=${this.kitchen.targetPlatforms}&key=${this.kitchen.appChefKey}`;
+        return axios.get(url, {
+            responseType: 'json'
+        }).then(res => {
+            if (res.data.taskToken) {
+                return this.downloadOrder(
+                    res.data.zipUrl,
+                    `${this.kitchen.wsDir}${res.data.taskToken}/`,
+                    5).then(() => res.data.taskToken);
+            }
         });
     }
 
