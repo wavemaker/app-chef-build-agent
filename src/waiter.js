@@ -23,7 +23,6 @@ class Waiter {
 
     takeOrder() {
         const tempFile = this.kitchen.tempDir + `mobile_${Date.now()}.zip`;
-        const fw = fs.createWriteStream(tempFile);
         let url = `${this.kitchen.appChef}services/chef/assignWork?`
         url += `platforms=${this.kitchen.targetPlatforms}&key=${this.kitchen.appChefKey}`;
         let buildTaskToken = null;
@@ -38,6 +37,7 @@ class Waiter {
                 responseType: 'stream'
             }).then(res => {
                 return new Promise((resolve, reject) => {
+                    const fw = fs.createWriteStream(tempFile);
                     res.data.pipe(fw);
                     fw.on('error', err => {
                         reject(err);
