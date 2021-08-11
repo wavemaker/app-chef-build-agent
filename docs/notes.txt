@@ -5,9 +5,20 @@ defaults write com.apple.dt.xcodebuild IDEBuildOperationMaxNumberOfConcurrentCom
 defaults write com.apple.dt.Xcode PBXNumberOfParallelBuildSubtasks `sysctl -n hw.ncpu`
 defaults write com.apple.dt.Xcode IDEBuildOperationMaxNumberOfConcurrentCompileTasks `sysctl -n hw.ncpu`
 
----- npm
+
+-- for mac with apple silicon chip
+Check 'Open with rosetta' on terminal app's view info dialog. 
+
+--install nvm
+install nvm [curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash]
+    - add the below lines to .zshprofile
+      export NVM_DIR="$HOME/.nvm"
+      [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+nvm install v12
+npm install -g npm
+npm install -g pm2
 npm config set audit false
-npm config set --prefer-offline true
+npm config set prefer-offline true
 
 --- installations
 install brew [ mkdir homebrew && curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip 1 -C homebrew]
@@ -17,6 +28,7 @@ install gradle [ ~/homebrew/bin/brew install gradle ]
 download latest android studio
 /Users/${USER}/Library/Android/sdk/tools/bin/sdkmanager "platforms;android-28"
 install xcode from app store
+sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 sudo gem install cocoapods
 
 
@@ -25,9 +37,8 @@ export LANG=en_US.utf-8
 export JAVA_HOME="/Library/Java/JavaVirtualMachines/adoptopenjdk-8.jdk/Contents/Home"
 export ANDROID_HOME="/Users/${USER}/Library/Android/sdk"
 export ANDROID_SDK_ROOT="/Users/${USER}/Library/Android/sdk"
-export PATH="$PATH:/Users/${USER}/homebrew/Cellar/gradle/6.5.1/bin:/Users/${USER}/Library/Android/sdk/tools/bin"
-Sdkmanager --list
-appchef start-agents --appChef="${SERVER_HOST}" --appChefKey="${SECRET_KEY}" --platforms="android,ios"
-
-install node 12~
-npm install -g pm2
+export PATH="$PATH:/Users/${USER}/Library/Android/sdk/tools/bin"
+sdkmanager --list
+APP_SERVER_HOST=""
+APP_SECRET_KEY=""
+appchef start-agents --appChef="${APP_SERVER_HOST}" --appChefKey="${APP_SECRET_KEY}" --platforms="android,ios" --ios-instances=1 --android-instances=1
