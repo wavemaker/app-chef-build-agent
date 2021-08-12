@@ -92,7 +92,11 @@ class Waiter {
                 return this.downloadOrder(
                     res.data.zipUrl,
                     `${this.kitchen.wsDir}${res.data.taskToken}/`,
-                    5).then(() => res.data.taskToken);
+                    5).then(() => res.data.taskToken, () => {
+                        return this.returnOrder({
+                            buildTaskToken: res.data.taskToken
+                        }).then(() => Promise.reject('Failed to download'));
+                    });
             }
         });
     }
@@ -149,12 +153,37 @@ class Waiter {
                         label: loggerLabel,
                         message: "failed to serve the order with response as follows : " + msg
                     });
+                    if (success) {
+                        return this.returnOrder(buildData);
+                    }
                 }).then(() => {
                     fs.removeSync(buildFolder + (success ? '' : '_br'));
                 });
             });
     }
 
+    returnOrder(data) {
+        const form = new FormData();
+        form.append("success", "" + !!data.success);
+        form.append("retry", "" + true);
+        form.append("token", data.buildTaskToken);
+        form.append("key", this.kitchen.appChefKey);
+        return axios.post(`${this.kitchen.appChef}services/chef/onBuildFinish`, form, {
+            headers : form.getHeaders(),
+            maxContentLength: Infinity,
+            maxBodyLength: Infinity
+        }).then(() => {
+            logger.info({
+                label: loggerLabel,
+                message: "Not able to fulfill. So,returned the order to retry."
+            });
+        }, () => {
+            logger.info({
+                label: loggerLabel,
+                message: "Not able to return the order."
+            });
+        });
+    }
 
     upload(data, retryCount) {
         const buildLog = findFile(data.buildFolder + "build/output/logs/", /build.log?/);
