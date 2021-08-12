@@ -24,10 +24,8 @@ class Waiter {
     /**
      * Sometimes, downloaded zip is not getting decompressed.
      * This is observerd on Apple Silicon Mac Pro systems. 
-     * If zip is downloaded again, then it is getting decompressed easily.
-     * That is the reason, download is retried, if it fails.
      */
-    downloadOrder(url, dest, retryAttempts) {
+    downloadOrder(url, dest) {
         const tempFile = this.kitchen.tempDir + `mobile_${Date.now()}.zip`;
         return axios.get(url, {
             timeout: MAX_REQUEST_ALLOWED_TIME,
@@ -65,20 +63,6 @@ class Waiter {
             });
             fs.mkdirsSync(dest + '_br');
             fs.renameSync(dest + 'src/_br', dest + '_br');
-        }).catch((e) => {
-            if (retryAttempts) {
-                logger.info({
-                    label: loggerLabel,
-                    message: `Failed to download the order. Due to ${e}`
-                });
-                logger.info({
-                    label: loggerLabel,
-                    message: `Trying for another time.`
-                });
-                return this.downloadOrder(url, dest, --retryAttempts);
-            } else {
-                return Promise.reject(`Failed to download the order. Due to ${e}`);
-            }
         });
     }
 
@@ -92,11 +76,7 @@ class Waiter {
                 return this.downloadOrder(
                     res.data.zipUrl,
                     `${this.kitchen.wsDir}${res.data.taskToken}/`,
-                    5).then(() => res.data.taskToken, () => {
-                        return this.returnOrder({
-                            buildTaskToken: res.data.taskToken
-                        }).then(() => Promise.reject('Failed to download'));
-                    });
+                    5).then(() => res.data.taskToken);
             }
         });
     }
@@ -153,36 +133,10 @@ class Waiter {
                         label: loggerLabel,
                         message: "failed to serve the order with response as follows : " + msg
                     });
-                    if (success) {
-                        return this.returnOrder(buildData);
-                    }
                 }).then(() => {
                     fs.removeSync(buildFolder + (success ? '' : '_br'));
                 });
             });
-    }
-
-    returnOrder(data) {
-        const form = new FormData();
-        form.append("success", "" + !!data.success);
-        form.append("retry", "" + true);
-        form.append("token", data.buildTaskToken);
-        form.append("key", this.kitchen.appChefKey);
-        return axios.post(`${this.kitchen.appChef}services/chef/onBuildFinish`, form, {
-            headers : form.getHeaders(),
-            maxContentLength: Infinity,
-            maxBodyLength: Infinity
-        }).then(() => {
-            logger.info({
-                label: loggerLabel,
-                message: "Not able to fulfill. So,returned the order to retry."
-            });
-        }, () => {
-            logger.info({
-                label: loggerLabel,
-                message: "Not able to return the order."
-            });
-        });
     }
 
     upload(data, retryCount) {
