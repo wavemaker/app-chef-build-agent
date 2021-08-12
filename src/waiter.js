@@ -21,16 +21,14 @@ class Waiter {
         this.kitchen = kitchen;
     }
 
-    downloadOrder(url, dest, tryCount) {
+    /**
+     * Sometimes, downloaded zip is not getting decompressed.
+     * This is observerd on Apple Silicon Mac Pro systems. 
+     * If zip is downloaded again, then it is getting decompressed easily.
+     * That is the reason, download is retried, if it fails.
+     */
+    downloadOrder(url, dest, retryAttempts) {
         const tempFile = this.kitchen.tempDir + `mobile_${Date.now()}.zip`;
-        if (!tryCount) {
-            return Promise.reject(`Not able to download the order. Tried for ${tryCount} times.`);
-        } else {
-            logger.info({
-                label: loggerLabel,
-                message: `Trying to download order for ${tryCount} time(s).`
-            });
-        }
         return axios.get(url, {
             timeout: MAX_REQUEST_ALLOWED_TIME,
             responseType: 'stream'
@@ -67,8 +65,20 @@ class Waiter {
             });
             fs.mkdirsSync(dest + '_br');
             fs.renameSync(dest + 'src/_br', dest + '_br');
-        }).catch(() => {
-            this.downloadOrder(url, dest, --tryCount);
+        }).catch((e) => {
+            if (retryAttempts) {
+                logger.info({
+                    label: loggerLabel,
+                    message: `Failed to download the order. Due to ${e}`
+                });
+                logger.info({
+                    label: loggerLabel,
+                    message: `Trying for another time.`
+                });
+                return this.downloadOrder(url, dest, --retryAttempts);
+            } else {
+                return Promise.reject(`Failed to download the order. Due to ${e}`);
+            }
         });
     }
 
