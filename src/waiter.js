@@ -144,9 +144,7 @@ class Waiter {
         const form = new FormData();
         data.outputName && form.append('outputName', data.outputName);
         data.outputAt && form.append('outputAt', data.outputAt);
-        if (fs.existsSync(buildLog)) {
-            form.append("log", fs.createReadStream(buildLog));
-        }
+        form.append("log", fs.createReadStream(buildLog));
         form.append("success", "" + data.success);
         form.append("token", data.buildTaskToken);
         form.append("key", this.kitchen.appChefKey);
