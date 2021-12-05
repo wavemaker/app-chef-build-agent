@@ -123,19 +123,19 @@ class Waiter {
                 buildData['buildFolder'] = buildFolder;
                 buildData['buildTaskToken'] = buildTaskToken;
                 buildData['success'] = success;
-                return this.upload(buildData, 5).then(() => {
-                    logger.info({
-                        label: loggerLabel,
-                        message: "successfully served the order."
-                    });
-                }).catch((msg) => {
-                    logger.error({
-                        label: loggerLabel,
-                        message: "failed to serve the order with response as follows : " + msg
-                    });
-                }).then(() => {
-                    fs.removeSync(buildFolder);
+                return this.upload(buildData, 5);
+            }).then(() => {
+                logger.info({
+                    label: loggerLabel,
+                    message: "successfully served the order."
                 });
+            }).catch((msg) => {
+                logger.error({
+                    label: loggerLabel,
+                    message: "failed to serve the order with response as follows : " + msg
+                });
+            }).then(() => {
+                fs.removeSync(buildFolder);
             });
     }
 
