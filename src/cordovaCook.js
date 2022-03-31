@@ -1,6 +1,6 @@
 const command = require('@wavemaker/wm-cordova-cli/src/command');
 const logger = require('@wavemaker/wm-cordova-cli/src/logger');
-const fs = require('fs-extra');
+const semver = require('semver');
 
 const loggerLabel = 'CordovaCook';
 
@@ -10,6 +10,17 @@ class CordovaCook {
         this.kitchen = kitchen;
     }
 
+    setEnvironment(cordovaVersion, cordovaAndroidVersion, cordovaIosVersion) {
+        if (cordovaAndroidVersion) {
+            if (semver.gte(cordovaVersion, '11.0.0') && process.env.JAVA_11_HOME) {
+                process.env.JAVA_HOME = process.env.JAVA_11_HOME;
+                process.env.PATH = process.env.JAVA_HOME + ':' + process.env.PATH;
+            } else if (process.env.JAVA_8_HOME) {
+                process.env.JAVA_HOME = process.env.JAVA_8_HOME;
+            }
+        }
+    }
+
     async doWork(buildTaskToken, settings, buildFolder) {
         const start = Date.now();
         logger.info({
@@ -17,6 +28,11 @@ class CordovaCook {
             message: "build is about to start in the next milliseconds."
         });
         const buildType = settings.buildType === 'production' ? 'release' : 'debug';
+        this.setEnvironment(
+            settings.cordovaVersion,
+            settings.cordovaAndroidVersion,
+            settings.cordovaIosVersion
+        );
         let result = {};
         try {
             if (settings.platform === 'ios') {

@@ -17,18 +17,19 @@
   "author": "Srinivasa Rao Boyina",
   "license": "ISC",
   "dependencies": {
+    "@wavemaker/wm-cordova-cli": "https://github.com/wavemaker/wm-cordova-cli#b4f5f63",
+    "@wavemaker/wm-reactnative-cli": "https://github.com/wavemaker/wm-reactnative-cli.git",
     "async": "^3.2.0",
     "aws-sdk": "^2.737.0",
-    "execa": "^4.0.3",
     "axios": "0.21.0",
+    "execa": "^4.0.3",
     "form-data": "^3.0.0",
     "fs-extra": "^9.0.1",
     "request": "^2.88.2",
     "requests": "^0.3.0",
+    "semver": "^7.3.5",
     "unzipper": "^0.10.11",
     "winston": "^3.3.3",
-    "@wavemaker/wm-cordova-cli": "https://github.com/wavemaker/wm-cordova-cli#b4f5f63",
-    "@wavemaker/wm-reactnative-cli": "https://github.com/wavemaker/wm-reactnative-cli.git",
     "yargs": "^15.4.1"
   }
 }
