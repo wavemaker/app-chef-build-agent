@@ -10,7 +10,7 @@ class ReactnativeCook {
         this.kitchen = kitchen;
     }
 
-    setAndroidEnvironment() {
+    setJavaEnvironment() {
         if (process.env.JAVA_11_HOME) {
             process.env.JAVA_HOME = process.env.JAVA_11_HOME;
             process.env.PATH = process.env.JAVA_HOME + ':' + process.env.PATH;
@@ -25,6 +25,7 @@ class ReactnativeCook {
         });
         let result = {};
         try {
+            this.setJavaEnvironment();
             if (settings.platform === 'ios') {
                 result = await command.build({
                     src: `${buildFolder}src/`,
@@ -37,7 +38,6 @@ class ReactnativeCook {
                     platform: 'ios'
                 });
             } else if (settings.platform === 'android') {
-                this.setAndroidEnvironment();
                 result = await command.build({
                     src: `${buildFolder}src/`,
                     dest: `${buildFolder}build/`,
