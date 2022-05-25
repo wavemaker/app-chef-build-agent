@@ -28,11 +28,11 @@ class CordovaCook {
             message: "build is about to start in the next milliseconds."
         });
         const buildType = settings.buildType === 'production' ? 'release' : 'debug';
-        this.setEnvironment(
+        /*this.setEnvironment(
             settings.cordovaVersion,
             settings.cordovaAndroidVersion,
             settings.cordovaIosVersion
-        );
+        );*/
         let result = {};
         try {
             if (settings.platform === 'ios') {
