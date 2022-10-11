@@ -12,7 +12,7 @@ class CordovaCook {
 
     setEnvironment(cordovaVersion, cordovaAndroidVersion, cordovaIosVersion) {
         if (cordovaAndroidVersion) {
-            if (semver.gte(cordovaVersion, '11.0.0') && process.env.JAVA_11_HOME) {
+            if (semver.gte(cordovaAndroidVersion, '11.0.0') && process.env.JAVA_11_HOME) {
                 process.env.JAVA_HOME = process.env.JAVA_11_HOME;
                 process.env.PATH = process.env.JAVA_HOME + ':' + process.env.PATH;
             } else if (process.env.JAVA_8_HOME) {
@@ -28,11 +28,11 @@ class CordovaCook {
             message: "build is about to start in the next milliseconds."
         });
         const buildType = settings.buildType === 'production' ? 'release' : 'debug';
-        /*this.setEnvironment(
+        this.setEnvironment(
             settings.cordovaVersion,
             settings.cordovaAndroidVersion,
             settings.cordovaIosVersion
-        );*/
+        );
         let result = {};
         try {
             if (settings.platform === 'ios') {
