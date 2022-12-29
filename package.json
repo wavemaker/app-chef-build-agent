@@ -17,8 +17,8 @@
   "author": "Srinivasa Rao Boyina",
   "license": "ISC",
   "dependencies": {
-    "@wavemaker/wm-cordova-cli": "https://github.com/wavemaker/wm-cordova-cli#b4f5f63",
-    "@wavemaker/wm-reactnative-cli": "https://github.com/wavemaker/wm-reactnative-cli.git",
+    "@wavemaker/wm-cordova-cli": "3.0.1",
+    "@wavemaker/wm-reactnative-cli": "1.3.5",
     "async": "^3.2.0",
     "aws-sdk": "^2.737.0",
     "axios": "0.21.0",
