@@ -23,6 +23,7 @@ class ReactnativeCook {
             label: loggerLabel,
             message: "build is about to start in the next milliseconds."
         });
+        const buildType = settings.buildType === 'production' ? 'release' : 'debug';
         let result = {};
         try {
             if (settings.platform === 'ios') {
@@ -32,7 +33,7 @@ class ReactnativeCook {
                     iCertificate: buildFolder + settings.codesign.certificate,
                     iCertificatePassword: settings.codesign.unlockPassword,
                     iProvisioningFile: buildFolder + settings.codesign.provisioningProfile,
-                    buildType: settings.buildType,
+                    buildType: buildType,
                     autoEject: true,
                     platform: 'ios'
                 });
@@ -45,7 +46,7 @@ class ReactnativeCook {
                     aStorePassword: settings.codesign.storePassword,
                     aKeyAlias: settings.codesign.keyAlias,
                     aKeyPassword: settings.codesign.keyPassword,
-                    buildType: settings.buildType,
+                    buildType: buildType,
                     packageType: settings.packageType,
                     autoEject: true,
                     platform: 'android'
