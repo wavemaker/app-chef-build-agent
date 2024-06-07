@@ -13,7 +13,7 @@ class Manager {
         this.ownsLock = false;
     }
 
-    async manage() {
+    async manage(maxAllowedTime) {
         if (!this.ownsLock && fs.existsSync(this.kitchen.lockFile)) {
             process.exit();
             return;
@@ -30,12 +30,11 @@ class Manager {
                 });
                 return;
             }
-            return this.processOrder(orderId).then(() => {
+            return this.processOrder(orderId, maxAllowedTime).then(() => {
                 logger.info({
                     label: loggerLabel,
                     message: "Work is completed ."
                 });
-            }, (e) => {
                 logger.info({
                     label: loggerLabel,
                     message: "Failed to complete Work."
@@ -66,16 +65,25 @@ class Manager {
         await this.processOrder(orderId);
     }
 
-    async processOrder(orderId) {
-        const buildFolder = `${this.kitchen.wsDir}${orderId}/`;
-        const settingsFile = buildFolder + '_br/settings.json';
-        const settings = require(settingsFile);
-        fs_extra.removeSync(settingsFile);
-        if (settings.recipe === 'REACT_NATIVE') {
-            await new ReactnativeCook(this.kitchen).doWork(orderId, settings, buildFolder);
-        } else {
-            await new CordovaCook(this.kitchen).doWork(orderId, settings, buildFolder);
-        }
+    async processOrder(orderId, maxAllowedTime) {
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                logger.info({
+                    label: loggerLabel,
+                    message: `max time ${maxAllowedTime}ms reached.`
+                });
+                this.kitchen.waiter.serve(false, orderId, buildFolder, settings).then(reject);
+            }, maxAllowedTime || 20 * 60 *1000);
+            const buildFolder = `${this.kitchen.wsDir}${orderId}/`;
+            const settingsFile = buildFolder + '_br/settings.json';
+            const settings = require(settingsFile);
+            fs_extra.removeSync(settingsFile);
+            if (settings.recipe === 'REACT_NATIVE') {
+                new ReactnativeCook(this.kitchen).doWork(orderId, settings, buildFolder).then(resolve, reject);
+            } else {
+                new CordovaCook(this.kitchen).doWork(orderId, settings, buildFolder).then(resolve, reject);
+            }
+        });
     }
 }
 

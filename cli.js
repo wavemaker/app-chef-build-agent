@@ -26,7 +26,7 @@ const args = require('yargs')
         const argv = yargs.argv;
         argv.platforms.split(',').forEach(v => {
             argv.platforms = v;
-            new Kitchen(argv).manager.manage();
+            new Kitchen(argv).manager.manage(argv.killTimeout);
         });
     })
     .command('process [options]', 'Process build one by one', yargs => {

@@ -52,7 +52,7 @@ const prepareApp = (args) => {
       `--appChef=${args['appChef']}`,
       `--appChefKey=${args['appChefKey']}`,
       `--platforms=${args['platforms']}`,
-      `--kill-timeout=${15 * 60 * 1000}`,
+      `--kill-timeout=${20 * 60 * 1000}`,
       `--orderPullInterval=${opi}`
     ],
     instances: (args['instances'] && parseInt(args['instances'])) || 1,
