@@ -1,6 +1,6 @@
 const command = require('@wavemaker/wm-reactnative-cli/src/command');
 const logger = require('@wavemaker/wm-reactnative-cli/src/logger');
-const fs = require('fs-extra');
+const semver = require('semver');
 
 const loggerLabel = 'ReactnativeCook';
 
@@ -10,10 +10,15 @@ class ReactnativeCook {
         this.kitchen = kitchen;
     }
 
-    setAndroidEnvironment() {
-        if (process.env.JAVA_11_HOME) {
-            process.env.JAVA_HOME = process.env.JAVA_11_HOME;
-            process.env.PATH = process.env.JAVA_HOME + ':' + process.env.PATH;
+    setEnvironment(expoVersion) {
+        if (expoVersion) {
+            if (semver.lt(expoVersion, '50.0.0') && process.env.JAVA_11_HOME) {
+                process.env.JAVA_HOME = process.env.JAVA_11_HOME;
+                process.env.PATH = process.env.JAVA_HOME + ':' + process.env.PATH;
+            } else if (process.env.JAVA_17_HOME) {
+                process.env.JAVA_HOME = process.env.JAVA_17_HOME;
+                process.env.PATH = process.env.JAVA_HOME + ':' + process.env.PATH;
+            }
         }
     }
 
@@ -25,6 +30,8 @@ class ReactnativeCook {
         });
         const buildType = settings.buildType === 'production' ? 'release' : 'debug';
         let result = {};
+        const _package = require(`${buildFolder}/src/package.json`)
+        this.setEnvironment(_package.dependencies.expo);
         try {
             if (settings.platform === 'ios') {
                 result = await command.build({
@@ -38,7 +45,6 @@ class ReactnativeCook {
                     platform: 'ios'
                 });
             } else if (settings.platform === 'android') {
-                this.setAndroidEnvironment();
                 result = await command.build({
                     src: `${buildFolder}src/`,
                     dest: `${buildFolder}build/`,
