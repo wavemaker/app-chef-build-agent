@@ -12,7 +12,10 @@ class CordovaCook {
 
     setEnvironment(cordovaVersion, cordovaAndroidVersion, cordovaIosVersion) {
         if (cordovaAndroidVersion) {
-            if (semver.gte(cordovaAndroidVersion, '11.0.0') && process.env.JAVA_11_HOME) {
+            if (semver.gte(cordovaAndroidVersion, '13.0.0') && process.env.JAVA_17_HOME) {
+                process.env.JAVA_HOME = process.env.JAVA_17_HOME;
+                process.env.PATH = process.env.JAVA_HOME + ':' + process.env.PATH;
+            } else if (semver.gte(cordovaAndroidVersion, '11.0.0') && process.env.JAVA_11_HOME) {
                 process.env.JAVA_HOME = process.env.JAVA_11_HOME;
                 process.env.PATH = process.env.JAVA_HOME + ':' + process.env.PATH;
             } else if (process.env.JAVA_8_HOME) {
