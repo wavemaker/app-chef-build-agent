@@ -7,7 +7,7 @@ const FormData = require('form-data');
 const execa = require('execa');
 const axios = require('axios');
 const loggerLabel = 'Waiter';
-const MAX_FILE_SIZE_FOR_UPLOAD = 200 * 1024 * 1024;
+const MAX_FILE_SIZE_FOR_UPLOAD = 500 * 1024 * 1024;
 const MAX_REQUEST_ALLOWED_TIME = 3 * 60 * 1000;
 const path = require('path');
 
