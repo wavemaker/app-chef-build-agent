@@ -35,6 +35,7 @@ class Manager {
                     label: loggerLabel,
                     message: "Work is completed ."
                 });
+            }, (e) => {
                 logger.info({
                     label: loggerLabel,
                     message: "Failed to complete Work."
